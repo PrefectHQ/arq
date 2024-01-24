@@ -12,7 +12,7 @@ from arq.worker import Retry, Worker, func
 def arq_from_settings() -> arq.connections.RedisSettings:
     """Return arq RedisSettings from a settings section"""
     return arq.connections.RedisSettings(
-        host="test-cluster.aqtke6.clustercfg.use2.cache.amazonaws.com",
+        host="localhost",
         port="6379",
         conn_timeout=5,
         cluster_mode=True

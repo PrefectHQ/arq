@@ -1,4 +1,5 @@
 import asyncio
+import os
 import pickle
 
 import pytest
@@ -16,6 +17,8 @@ from arq.jobs import (
     deserialize_job_raw,
     serialize_result,
 )
+
+pytestmark = pytest.mark.skipif(os.getenv('CLUSTER_MODE') is True, reason='Needs a redis standalone insance.')
 
 
 async def test_job_in_progress(arq_redis: ArqRedis):

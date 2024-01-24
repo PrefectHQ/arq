@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import logging
+import os
 import re
 import signal
 import sys
@@ -24,6 +25,8 @@ from arq.worker import (
     func,
     run_worker,
 )
+
+pytestmark = pytest.mark.skipif(os.getenv('CLUSTER_MODE') is True, reason='Needs a redis standalone insance.')
 
 
 async def foobar(ctx):

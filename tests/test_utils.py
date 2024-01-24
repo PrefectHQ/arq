@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 import sys
 from datetime import timedelta
@@ -12,6 +13,8 @@ import arq.utils
 from arq.connections import RedisSettings, log_redis_info
 
 from .conftest import SetEnv
+
+pytestmark = pytest.mark.skipif(os.getenv('CLUSTER_MODE') is True, reason='Needs a redis standalone insance.')
 
 
 def test_settings_changed():

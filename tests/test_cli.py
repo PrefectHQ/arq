@@ -1,8 +1,12 @@
+import os
+
 import pytest
 from click.testing import CliRunner
 
 from arq import logs
 from arq.cli import cli
+
+pytestmark = pytest.mark.skipif(os.getenv('CLUSTER_MODE') is True, reason='Needs a redis standalone insance.')
 
 
 async def foobar(ctx):

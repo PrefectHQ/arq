@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 import re
 from datetime import datetime, timedelta
 from random import random
@@ -11,6 +12,8 @@ import arq
 from arq import Worker
 from arq.constants import in_progress_key_prefix
 from arq.cron import cron, next_cron
+
+pytestmark = pytest.mark.skipif(os.getenv('CLUSTER_MODE') is True, reason='Needs a redis standalone insance.')
 
 
 @pytest.mark.parametrize(

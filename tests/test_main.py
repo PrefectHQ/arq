@@ -2,6 +2,7 @@ import asyncio
 import dataclasses
 import functools
 import logging
+import os
 from collections import Counter
 from datetime import datetime, timezone
 from random import shuffle
@@ -16,6 +17,8 @@ from arq.constants import default_queue_name
 from arq.jobs import Job, JobDef, SerializationError
 from arq.utils import timestamp_ms
 from arq.worker import Retry, Worker, func
+
+pytestmark = pytest.mark.skipif(os.getenv('CLUSTER_MODE') is True, reason='Needs a redis standalone insance.')
 
 
 async def test_enqueue_job(arq_redis: ArqRedis, worker):

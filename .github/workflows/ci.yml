@@ -66,6 +66,7 @@ jobs:
     env:
       PYTHON: ${{ matrix.python }}
       OS: ${{ matrix.os }}
+      CLUSTER_MODE: False
 
     runs-on: ${{ format('{0}-latest', matrix.os) }}
 
@@ -95,6 +96,7 @@ jobs:
     env:
       PYTHON: ${{ matrix.python }}
       OS: ${{ matrix.os }}
+      CLUSTER_MODE: True
 
     runs-on: ${{ format('{0}-latest', matrix.os) }}
     steps:
