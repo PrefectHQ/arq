@@ -47,7 +47,7 @@ jobs:
         name: docs
         path: docs/_build/
 
-  test:
+  test-standalone:
     name: test py${{ matrix.python }} with redis:${{ matrix.redis }} on ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -76,6 +76,27 @@ jobs:
         - 7000:7000
         options: --entrypoint redis-server
 
+  test-cluster:
+    name: test py${{ matrix.python }} with redis:${{ matrix.redis }} on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu]
+        python: ['3.7', '3.8', '3.9', '3.10', '3.11']
+        redis: ['5']
+        include:
+          - python: '3.10'
+            redis: '6'
+            os: 'ubuntu'
+          - python: '3.10'
+            redis: '7'
+            os: 'ubuntu'
+
+    env:
+      PYTHON: ${{ matrix.python }}
+      OS: ${{ matrix.os }}
+
+    runs-on: ${{ format('{0}-latest', matrix.os) }}
     steps:
     - uses: actions/checkout@v2
     - name: Test redis cluster
