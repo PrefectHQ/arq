@@ -96,7 +96,7 @@ jobs:
         env_vars: PYTHON,OS
 
   test-cluster:
-    name: test py${{ matrix.python }} with redis:${{ matrix.redis }} on ${{ matrix.os }}
+    name: test py${{ matrix.python }} with redis-cluster:${{ matrix.redis }} on ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
