@@ -15,7 +15,7 @@ from arq.constants import default_queue_name
 from arq.jobs import Job, JobDef, SerializationError
 from arq.utils import timestamp_ms
 from arq.worker import Retry, Worker, func
-
+print(os.getenv('CLUSTE_MODE'))
 pytestmark = pytest.mark.skipif(os.getenv('CLUSTER_MODE') is False, reason='Needs a redis cluster instance. To test.')
 
 
