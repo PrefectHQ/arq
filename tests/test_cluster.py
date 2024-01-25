@@ -16,7 +16,7 @@ from arq.jobs import Job, JobDef, SerializationError
 from arq.utils import timestamp_ms
 from arq.worker import Retry, Worker, func
 
-pytestmark = pytest.mark.skipif(os.getenv('CLUSTER_MODE') is False, reason='Needs a redis cluster instance.')
+pytestmark = pytest.mark.skipif(os.getenv('CLUSTER_MODE') is False, reason='Needs a redis cluster instance. To test.')
 
 
 async def test_enqueue_job(arq_redis_cluster: ArqRedisCluster, cluster_worker):
