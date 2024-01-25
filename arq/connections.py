@@ -247,7 +247,7 @@ class ArqRedisCluster(RedisCluster):  # type: ignore
     _get_job_def = ArqRedis._get_job_def
     queued_jobs = ArqRedis.queued_jobs
 
-    def pipeline(self, transaction: Any | None = None, shard_hint: Any | None = None) -> ClusterPipeline:
+    def pipeline(self, transaction: Optional[Any] = None, shard_hint: Optional[Any] = None) -> ClusterPipeline:
         return ArqRedisClusterPipeline(self)
 
 
