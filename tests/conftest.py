@@ -20,7 +20,7 @@ def _fix_loop(event_loop):
 async def arq_redis(loop):
     redis_ = ArqRedis(
         host='localhost',
-        port=7000,
+        port=6379,
         encoding='utf-8',
     )
 
@@ -42,7 +42,7 @@ async def unix_socket_path(loop, tmp_path):
 async def arq_redis_msgpack(loop):
     redis_ = ArqRedis(
         host='localhost',
-        port=7000,
+        port=6379,
         encoding='utf-8',
         job_serializer=msgpack.packb,
         job_deserializer=functools.partial(msgpack.unpackb, raw=False),
@@ -54,7 +54,7 @@ async def arq_redis_msgpack(loop):
 
 @pytest.fixture
 async def arq_redis_cluster(loop):
-    settings = RedisSettings(host='localhost', port=6379, conn_timeout=5, cluster_mode=True)
+    settings = RedisSettings(host='localhost', port=5000, conn_timeout=5, cluster_mode=True)
     redis_ = await create_pool(settings)
     await redis_.flushall()
 
