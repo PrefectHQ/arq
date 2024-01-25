@@ -18,7 +18,7 @@ from arq.jobs import (
     serialize_result,
 )
 
-pytestmark = pytest.mark.skipif(os.getenv('CLUSTER_MODE') is True, reason='Needs a redis standalone insance.')
+pytestmark = pytest.mark.skipif(os.getenv('CLUSTER_MODE') == 'true', reason='Needs a redis standalone insance.')
 
 
 async def test_job_in_progress(arq_redis: ArqRedis):

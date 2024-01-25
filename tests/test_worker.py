@@ -26,7 +26,7 @@ from arq.worker import (
     run_worker,
 )
 
-pytestmark = pytest.mark.skipif(os.getenv('CLUSTER_MODE') is True, reason='Needs a redis standalone insance.')
+pytestmark = pytest.mark.skipif(os.getenv('CLUSTER_MODE') == 'true', reason='Needs a redis standalone insance.')
 
 
 async def foobar(ctx):
