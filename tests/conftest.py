@@ -56,7 +56,7 @@ async def arq_redis_msgpack(loop):
     await redis_.close(close_connection_pool=True)
 
 
-@pytest.fixture
+@pytest.fixture(autouse=False)
 async def arq_redis_cluster(loop):
     if os.getenv('CLUSTER_MODE') == 'false':
         pytest.skip('Needs cluster instance to run')

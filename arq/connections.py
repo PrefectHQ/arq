@@ -33,7 +33,7 @@ class RedisSettings:
     Used by :func:`arq.connections.create_pool` and :class:`arq.worker.Worker`.
     """
 
-    host: Union[str, List[Tuple[str, int]]] = 'test-cluster.aqtke6.clustercfg.use2.cache.amazonaws.com'
+    host: Union[str, List[Tuple[str, int]]] = 'localhost'
     port: int = 6379
     unix_socket_path: Optional[str] = None
     database: int = 0
@@ -49,7 +49,7 @@ class RedisSettings:
     conn_timeout: int = 1
     conn_retries: int = 5
     conn_retry_delay: int = 1
-    cluster_mode: bool = True
+    cluster_mode: bool = False
     sentinel: bool = False
     sentinel_master: str = 'mymaster'
 
