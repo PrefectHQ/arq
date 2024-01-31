@@ -55,8 +55,6 @@ pytz==2022.2.1
 # manually removed to avoid conflict with redis version from pyproject.toml
 # redis==4.2.2
 #     # via redislite
-redislite==6.2.805324
-    # via -r requirements/testing.in
 termcolor==1.1.0
     # via pytest-sugar
 tomli==2.0.1

@@ -18,6 +18,8 @@ def _fix_loop(event_loop):
 
 @pytest.fixture
 async def arq_redis(loop):
+    if os.getenv('CLUSTER_MODE') == 'true':
+        pytest.skip('Needs standalone instance to run')
     redis_ = ArqRedis(
         host='localhost',
         port=6379,
@@ -40,6 +42,8 @@ async def unix_socket_path(loop, tmp_path):
 
 @pytest.fixture
 async def arq_redis_msgpack(loop):
+    if os.getenv('CLUSTER_MODE') == 'true':
+        pytest.skip('Needs standalone instance to run')
     redis_ = ArqRedis(
         host='localhost',
         port=6379,
@@ -54,6 +58,8 @@ async def arq_redis_msgpack(loop):
 
 @pytest.fixture
 async def arq_redis_cluster(loop):
+    if os.getenv('CLUSTER_MODE') == 'false':
+        pytest.skip('Needs cluster instance to run')
     settings = RedisSettings(host='localhost', port=5000, conn_timeout=5, cluster_mode=True)
     redis_ = await create_pool(settings)
     await redis_.flushall()
@@ -64,6 +70,8 @@ async def arq_redis_cluster(loop):
 
 @pytest.fixture
 async def worker(arq_redis):
+    if os.getenv('CLUSTER_MODE') == 'true':
+        pytest.skip('Needs standalone instance to run')
     worker_: Worker = None
 
     def create(functions=[], burst=True, poll_delay=0, max_jobs=10, arq_redis=arq_redis, **kwargs):
@@ -81,6 +89,8 @@ async def worker(arq_redis):
 
 @pytest.fixture
 async def cluster_worker(arq_redis_cluster):
+    if os.getenv('CLUSTER_MODE') == 'false':
+        pytest.skip('Needs cluster instance to run')
     worker_: Worker = None
 
     def create(functions=[], burst=True, poll_delay=0, max_jobs=10, arq_redis=arq_redis_cluster, **kwargs):
