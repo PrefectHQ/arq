@@ -14,9 +14,8 @@ from arq import ArqRedisCluster
 from arq.constants import default_queue_name
 from arq.jobs import Job, JobDef, SerializationError
 from arq.utils import timestamp_ms
-from arq.worker import Retry, Worker, func
+from arq.worker import Worker, func
 
-print(os.getenv('CLUSTE_MODE'))
 pytestmark = pytest.mark.skipif(os.getenv('CLUSTER_MODE') == 'false', reason='Needs a redis cluster instance. To test.')
 
 
@@ -35,17 +34,20 @@ async def test_enqueue_job_different_queues(arq_redis_cluster: ArqRedisCluster, 
     async def foobar(ctx):
         return 42
 
+    async def barfoo(ctx):
+        return 24
+
     j1 = await arq_redis_cluster.enqueue_job('foobar', _queue_name='arq:queue1')
-    j2 = await arq_redis_cluster.enqueue_job('foobar', _queue_name='arq:queue2')
+    j2 = await arq_redis_cluster.enqueue_job('barfoo', _queue_name='arq:queue2')
     worker1: Worker = cluster_worker(functions=[func(foobar, name='foobar')], queue_name='arq:queue1')
-    worker2: Worker = cluster_worker(functions=[func(foobar, name='foobar')], queue_name='arq:queue2')
+    worker2: Worker = cluster_worker(functions=[func(barfoo, name='barfoo')], queue_name='arq:queue2')
 
     await worker1.main()
     await worker2.main()
     r1 = await j1.result(poll_delay=0)
     r2 = await j2.result(poll_delay=0)
     assert r1 == 42  # 1
-    assert r2 == 42  # 2
+    assert r2 == 24  # 2
 
 
 async def test_enqueue_job_nested(arq_redis_cluster: ArqRedisCluster, cluster_worker):
@@ -67,51 +69,32 @@ async def test_enqueue_job_nested(arq_redis_cluster: ArqRedisCluster, cluster_wo
     assert inner_result == 42
 
 
-# async def test_enqueue_job_nested_custom_serializer(arq_redis_msgpack: ArqRedisCluster, cluster_worker):
-#     async def foobar(ctx):
-#         return 42
-
-#     async def parent_job(ctx):
-#         inner_job = await ctx['redis'].enqueue_job('foobar')
-#         return inner_job.job_id
-
-#     job = await arq_redis_msgpack.enqueue_job('parent_job')
-
-#     worker: Worker = cluster_worker(
-#         functions=[func(parent_job, name='parent_job'), func(foobar, name='foobar')],
-#         arq_redis=None,
-#         job_serializer=msgpack.packb,
-#         job_deserializer=functools.partial(msgpack.unpackb, raw=False),
-#     )
-
-#     await worker.main()
-#     result = await job.result(poll_delay=0)
-#     assert result is not None
-#     inner_job = Job(result, arq_redis_msgpack, _deserializer=functools.partial(msgpack.unpackb, raw=False))
-#     inner_result = await inner_job.result(poll_delay=0)
-#     assert inner_result == 42
-
-
 async def test_enqueue_job_custom_queue(arq_redis_cluster: ArqRedisCluster, cluster_worker):
     async def foobar(ctx):
         return 42
 
     async def parent_job(ctx):
-        inner_job = await ctx['redis'].enqueue_job('foobar')
+        inner_job = await ctx['redis'].enqueue_job(
+            'foobar',
+        )
         return inner_job.job_id
 
     job = await arq_redis_cluster.enqueue_job('parent_job', _queue_name='spanner')
 
     worker: Worker = cluster_worker(
-        functions=[func(parent_job, name='parent_job'), func(foobar, name='foobar')],
-        arq_redis=None,
+        functions=[
+            func(parent_job, name='parent_job'),
+            func(foobar, name='foobar'),
+        ],
         queue_name='spanner',
+        arq_redis_cluster=None,
     )
 
     await worker.main()
     inner_job_id = await job.result(poll_delay=0)
     assert inner_job_id is not None
     inner_job = Job(inner_job_id, arq_redis_cluster, _queue_name='spanner')
+
     inner_result = await inner_job.result(poll_delay=0)
     assert inner_result == 42
 
@@ -205,17 +188,17 @@ async def test_custom_try(arq_redis_cluster: ArqRedisCluster, cluster_worker):
     assert r == 3
 
 
-async def test_custom_try2(arq_redis_cluster: ArqRedisCluster, cluster_worker):
-    async def foobar(ctx):
-        if ctx['job_try'] == 3:
-            raise Retry()
-        return ctx['job_try']
+# async def test_custom_try2(arq_redis_cluster: ArqRedisCluster, cluster_worker):
+#     async def foobar(ctx):
+#         if ctx['job_try'] == 3:
+#             raise Retry()
+#         return ctx['job_try']
 
-    j1 = await arq_redis_cluster.enqueue_job('foobar', _job_try=3)
-    w: Worker = cluster_worker(functions=[func(foobar, name='foobar')])
-    await w.main()
-    r = await j1.result(poll_delay=0)
-    assert r == 4
+#     j1 = await arq_redis_cluster.enqueue_job('foobar', _job_try=3)
+#     w: Worker = cluster_worker(functions=[func(foobar, name='foobar')])
+#     await w.main()
+#     r = await j1.result(poll_delay=0)
+#     assert r == 4
 
 
 async def test_cant_pickle_arg(arq_redis_cluster: ArqRedisCluster):

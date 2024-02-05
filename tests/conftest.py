@@ -7,7 +7,7 @@ import msgpack
 import pytest
 from redislite import Redis
 
-from arq.connections import ArqRedis, RedisSettings, create_pool
+from arq.connections import ArqRedis, ArqRedisCluster, RedisSettings, create_pool
 from arq.worker import Worker
 
 
@@ -56,15 +56,32 @@ async def arq_redis_msgpack(loop):
     await redis_.close(close_connection_pool=True)
 
 
-@pytest.fixture(autouse=False)
+# @pytest.fixture(autouse=False)
+# async def arq_redis_cluster(loop):
+#     if os.getenv('CLUSTER_MODE') == 'false':
+#         pytest.skip('Needs cluster instance to run')
+#     settings = RedisSettings(host='localhost', port=6379, conn_timeout=5, cluster_mode=True)
+#     redis_ = await create_pool(settings)
+#     await redis_.flushall()
+
+#     yield redis_
+#     await redis_.aclose()
+
+
+@pytest.fixture
 async def arq_redis_cluster(loop):
     if os.getenv('CLUSTER_MODE') == 'false':
-        pytest.skip('Needs cluster instance to run')
-    settings = RedisSettings(host='localhost', port=5000, conn_timeout=5, cluster_mode=True)
-    redis_ = await create_pool(settings)
+        pytest.skip('Needs standalone instance to run')
+    redis_ = ArqRedisCluster(
+        host='localhost',
+        port=6379,
+        encoding='utf-8',
+    )
+
     await redis_.flushall()
 
     yield redis_
+
     await redis_.close()
 
 
@@ -93,7 +110,7 @@ async def cluster_worker(arq_redis_cluster):
         pytest.skip('Needs cluster instance to run')
     worker_: Worker = None
 
-    def create(functions=[], burst=True, poll_delay=0, max_jobs=10, arq_redis=arq_redis_cluster, **kwargs):
+    def create(functions=[], burst=True, poll_delay=0, max_jobs=10, arq_redis_cluster=arq_redis_cluster, **kwargs):
         nonlocal worker_
         worker_ = Worker(
             functions=functions,
@@ -101,6 +118,7 @@ async def cluster_worker(arq_redis_cluster):
             burst=burst,
             poll_delay=poll_delay,
             max_jobs=max_jobs,
+            redis_settings=RedisSettings(host='localhost', port=6379, conn_timeout=5, cluster_mode=True),
             **kwargs,
         )
         return worker_

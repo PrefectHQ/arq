@@ -98,6 +98,7 @@ async def test_enqueue_job_custom_queue(arq_redis: ArqRedis, worker):
         return 42
 
     async def parent_job(ctx):
+        print(ctx)
         inner_job = await ctx['redis'].enqueue_job('foobar')
         return inner_job.job_id
 
@@ -114,7 +115,7 @@ async def test_enqueue_job_custom_queue(arq_redis: ArqRedis, worker):
     assert inner_job_id is not None
     inner_job = Job(inner_job_id, arq_redis, _queue_name='spanner')
     inner_result = await inner_job.result(poll_delay=0)
-    assert inner_result == 42
+    assert inner_result == 4
 
 
 async def test_job_error(arq_redis: ArqRedis, worker):

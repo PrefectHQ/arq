@@ -262,7 +262,7 @@ class ArqRedisClusterPipeline(ClusterPipeline):  # type: ignore
     def multi(self) -> None:
         self.watching = False
 
-    def execute_command(self, *args: Union[KeyT, EncodableT], **kwargs: Any) -> 'ClusterPipeline':
+    def execute_command(self, *args: Union[KeyT, EncodableT], **kwargs: Any) -> 'ClusterPipeline':  # type: ignore
         cmd = PipelineCommand(len(self._command_stack), *args, **kwargs)
         if self.watching:
             return self.immediate_execute_command(cmd)

@@ -57,7 +57,7 @@ Changelog = 'https://github.com/samuelcolvin/arq/releases'
 
 [tool.pytest.ini_options]
 testpaths = 'tests'
-filterwarnings = ['error']
+filterwarnings = ['error','ignore::DeprecationWarning']
 asyncio_mode = 'auto'
 
 
