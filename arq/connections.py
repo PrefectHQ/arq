@@ -175,7 +175,6 @@ class ArqRedis(BaseRedis):
                 # job got enqueued since we checked 'job_exists'
                 return None
         the_job = Job(job_id, redis=self, _queue_name=_queue_name, _deserializer=self.job_deserializer)
-        logger.debug(the_job)
         return the_job
 
     async def _get_job_result(self, key: bytes) -> JobResult:

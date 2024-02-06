@@ -221,6 +221,7 @@ class Worker:
         self.functions: Dict[str, Union[Function, CronJob]] = {f.name: f for f in map(func, functions)}
         if queue_name is None:
             if redis_pool is not None:
+               
                 queue_name = redis_pool.default_queue_name
             else:
                 raise ValueError('If queue_name is absent, redis_pool must be present.')
@@ -344,8 +345,7 @@ class Worker:
                 default_queue_name=self.queue_name,
                 expires_extra_ms=self.expires_extra_ms,
             )
-
-        logger.info('Starting worker for %d functions: %s', len(self.functions), ', '.join(self.functions))
+        logger.info('Starting worker for %d functions: %s in queue name: %s', len(self.functions), ', '.join(self.functions),self.queue_name)
         if not isinstance(self._pool, ArqRedisCluster):
             await log_redis_info(self.pool, logger.info)
         self.ctx['redis'] = self.pool
@@ -382,7 +382,7 @@ class Worker:
                 job_ids = await self.pool.zrangebyscore(
                     self.queue_name, min=float('-inf'), start=self._queue_read_offset, num=count, max=now
                 )
-
+            logger.debug("job ids: %s",job_ids)
             await self.start_jobs(job_ids)
 
         if self.allow_abort_jobs:
