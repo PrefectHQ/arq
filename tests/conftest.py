@@ -7,7 +7,7 @@ import msgpack
 import pytest
 from redislite import Redis
 
-from arq.connections import ArqRedis, RedisSettings, create_pool
+from arq.connections import ArqRedis, ArqRedisCluster, RedisSettings, create_pool
 from arq.worker import Worker
 
 
@@ -60,9 +60,9 @@ async def arq_redis_msgpack(loop):
 async def arq_redis_cluster(loop):
     if os.getenv('CLUSTER_MODE') == 'false':
         pytest.skip('Needs standalone instance to run')
-    redis_ = ArqRedis(
+    redis_ = ArqRedisCluster(
         host='localhost',
-        port=5000,
+        port=6379,
         encoding='utf-8',
     )
 
@@ -106,7 +106,7 @@ async def cluster_worker(arq_redis_cluster):
             burst=burst,
             poll_delay=poll_delay,
             max_jobs=max_jobs,
-            redis_settings=RedisSettings(host='localhost', port=5000, conn_timeout=5, cluster_mode=True),
+            redis_settings=RedisSettings(host='localhost', port=6379, conn_timeout=5, cluster_mode=True),
             **kwargs,
         )
         return worker_
