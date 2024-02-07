@@ -387,7 +387,7 @@ class Worker:
                 job_ids = await self.pool.zrangebyscore(
                     self.queue_name, min=float('-inf'), start=self._queue_read_offset, num=count, max=now
                 )
-            logger.debug("job ids: %s", job_ids)
+            logger.info('job ids: %s', job_ids)
             await self.start_jobs(job_ids)
 
         if self.allow_abort_jobs:
