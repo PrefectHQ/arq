@@ -352,6 +352,7 @@ async def create_pool(
             pool.job_deserializer = job_deserializer
             pool.default_queue_name = default_queue_name
             pool.expires_extra_ms = expires_extra_ms
+            await pool.ping()
 
         except (ConnectionError, OSError, RedisError, asyncio.TimeoutError) as e:
             if retry < settings.conn_retries:

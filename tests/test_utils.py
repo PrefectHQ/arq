@@ -31,7 +31,7 @@ def test_settings_changed():
 async def test_redis_timeout(mocker, create_pool):
     mocker.spy(arq.utils.asyncio, 'sleep')
     with pytest.raises(ConnectionError):
-        await create_pool(RedisSettings(port=0, conn_retry_delay=0))
+        await create_pool(RedisSettings(password='pw', port=0, conn_retry_delay=0))
     assert arq.utils.asyncio.sleep.call_count == 5
 
 
