@@ -214,7 +214,12 @@ class ArqRedis(BaseRedis):
         return await asyncio.gather(*[self._get_job_def(job_id, int(score)) for job_id, score in jobs])
 
 
-class ArqRedisCluster(RedisCluster):  # type: ignore
+if TYPE_CHECKING:
+    BaseRedisCluster = RedisCluster[bytes]
+else:
+    BaseRedisCluster = RedisCluster
+
+class ArqRedisCluster(BaseRedisCluster):  # type: ignore
     """
     Thin subclass of ``from redis.asyncio.cluster.RedisCluster`` which patches methods of RedisClusterPipeline
     to support redis cluster`.
