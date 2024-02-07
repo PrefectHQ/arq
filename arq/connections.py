@@ -251,6 +251,9 @@ class ArqRedisCluster(RedisCluster):  # type: ignore
     def pipeline(self, transaction: Optional[Any] = None, shard_hint: Optional[Any] = None) -> ClusterPipeline:
         return ArqRedisClusterPipeline(self)
 
+    async def close(self, close_connection_pool: Optional[bool] = None) -> None:
+        await self.aclose()
+
 
 class ArqRedisClusterPipeline(ClusterPipeline):  # type: ignore
     def __init__(self, client: RedisCluster) -> None:
