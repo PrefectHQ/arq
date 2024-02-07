@@ -14,7 +14,7 @@ from arq import ArqRedisCluster
 from arq.constants import default_queue_name
 from arq.jobs import Job, JobDef, SerializationError
 from arq.utils import timestamp_ms
-from arq.worker import Worker, func
+from arq.worker import Retry, Worker, func
 
 pytestmark = pytest.mark.skipif(os.getenv('CLUSTER_MODE') == 'false', reason='Needs a redis cluster instance. To test.')
 
@@ -188,17 +188,17 @@ async def test_custom_try(arq_redis_cluster: ArqRedisCluster, cluster_worker):
     assert r == 3
 
 
-# async def test_custom_try2(arq_redis_cluster: ArqRedisCluster, cluster_worker):
-#     async def foobar(ctx):
-#         if ctx['job_try'] == 3:
-#             raise Retry()
-#         return ctx['job_try']
+async def test_custom_try2(arq_redis_cluster: ArqRedisCluster, cluster_worker):
+    async def foobar(ctx):
+        if ctx['job_try'] == 3:
+            raise Retry()
+        return ctx['job_try']
 
-#     j1 = await arq_redis_cluster.enqueue_job('foobar', _job_try=3)
-#     w: Worker = cluster_worker(functions=[func(foobar, name='foobar')])
-#     await w.main()
-#     r = await j1.result(poll_delay=0)
-#     assert r == 4
+    j1 = await arq_redis_cluster.enqueue_job('foobar', _job_try=3)
+    w: Worker = cluster_worker(functions=[func(foobar, name='foobar')])
+    await w.main()
+    r = await j1.result(poll_delay=0)
+    assert r == 4
 
 
 async def test_cant_pickle_arg(arq_redis_cluster: ArqRedisCluster):

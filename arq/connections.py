@@ -219,6 +219,7 @@ if TYPE_CHECKING:
 else:
     BaseRedisCluster = RedisCluster
 
+
 class ArqRedisCluster(BaseRedisCluster):  # type: ignore
     """
     Thin subclass of ``from redis.asyncio.cluster.RedisCluster`` which patches methods of RedisClusterPipeline
@@ -256,7 +257,7 @@ class ArqRedisCluster(BaseRedisCluster):  # type: ignore
     def pipeline(self, transaction: Optional[Any] = None, shard_hint: Optional[Any] = None) -> ClusterPipeline:
         return ArqRedisClusterPipeline(self)
 
-  
+
 class ArqRedisClusterPipeline(ClusterPipeline):  # type: ignore
     def __init__(self, client: RedisCluster) -> None:
         self.watching = False
