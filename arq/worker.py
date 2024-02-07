@@ -15,7 +15,7 @@ from redis.exceptions import ResponseError, WatchError
 from arq.cron import CronJob
 from arq.jobs import Deserializer, JobResult, SerializationError, Serializer, deserialize_job_raw, serialize_result
 
-from .connections import ArqRedis, ArqRedisCluster, RedisSettings, create_pool, log_redis_info
+from .connections import ArqRedis,ArqRedisCluster, RedisSettings, create_pool, log_redis_info
 from .constants import (
     abort_job_max_age,
     abort_jobs_ss,
@@ -347,7 +347,7 @@ class Worker:
                 default_queue_name=self.queue_name,
                 expires_extra_ms=self.expires_extra_ms,
             )
-
+        
         logger.info('Starting worker for %d functions: %s', len(self.functions), ', '.join(self.functions))
         if not isinstance(self._pool, ArqRedisCluster):
             await log_redis_info(self.pool, logger.info)
@@ -861,7 +861,11 @@ class Worker:
         await self.pool.delete(self.health_check_key)
         if self.on_shutdown:
             await self.on_shutdown(self.ctx)
-        await self.pool.close(close_connection_pool=True)
+        
+        if not isinstance(self._pool, ArqRedisCluster):
+            await self.pool.close(close_connection_pool=True)
+        else:
+            await self.pool.close()
         self._pool = None
 
     def __repr__(self) -> str:
@@ -902,6 +906,8 @@ async def async_check_health(
     else:
         logger.info('Health check successful: %s', data)
         r = 0
+    if redis_settings.cluster_mode:
+        await redis.close()
     await redis.close(close_connection_pool=True)
     return r
 
