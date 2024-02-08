@@ -381,8 +381,8 @@ class Worker:
         if self.allow_pick_jobs:
             if self.job_counter < self.max_jobs:
                 now = timestamp_ms()
-                job_ids = await self.pool.zrangebyscore(
-                    self.queue_name, min=float('-inf'), start=self._queue_read_offset, num=count, max=now
+                job_ids = await self.pool.zrange(
+                    self.queue_name, start=float('-inf'), offset=self._queue_read_offset, num=count, end=now,byscore=True
                 )
 
                 await self.start_jobs(job_ids)
