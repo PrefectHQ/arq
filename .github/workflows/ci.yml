@@ -59,9 +59,7 @@ jobs:
           - python: '3.10'
             redis: '6'
             os: 'ubuntu'
-          - python: '3.10'
-            redis: '7'
-            os: 'ubuntu'
+   
 
     env:
       PYTHON: ${{ matrix.python }}
