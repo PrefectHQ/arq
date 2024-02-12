@@ -47,52 +47,6 @@ jobs:
         name: docs
         path: docs/_build/
 
-  test-standalone:
-    name: test py${{ matrix.python }} with redis:${{ matrix.redis }} on ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu]
-        python: ['3.7', '3.8', '3.9', '3.10', '3.11']
-        redis: ['5']
-        include:
-          - python: '3.10'
-            redis: '6'
-            os: 'ubuntu'
-   
-
-    env:
-      PYTHON: ${{ matrix.python }}
-      OS: ${{ matrix.os }}
-      CLUSTER_MODE: ${{ false }}
-
-    runs-on: ${{ format('{0}-latest', matrix.os) }}
-
-    services:
-      redis:
-        image: redis:${{ matrix.redis }}
-        ports:
-        - 6379:6379
-        options: --entrypoint redis-server
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: set up python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python }}
-
-    - run: pip install -r requirements/testing.txt -r requirements/pyproject.txt
-
-    - run: make test
-
-    - run: coverage xml
-
-    - uses: codecov/codecov-action@v2
-      with:
-        file: ./coverage.xml
-        env_vars: PYTHON,OS
-
   test-cluster:
     name: test py${{ matrix.python }} with redis-cluster:${{ matrix.redis }} on ${{ matrix.os }}
     strategy:
@@ -105,10 +59,15 @@ jobs:
           - python: '3.10'
             redis: '6'
             os: 'ubuntu'
+          - python: '3.10'
+            redis: '7'
+            os: 'ubuntu'
+
     env:
       PYTHON: ${{ matrix.python }}
       OS: ${{ matrix.os }}
       CLUSTER_MODE: ${{ true }}
+      PYTHONASYNCIODEBUG: 1
 
     runs-on: ${{ format('{0}-latest', matrix.os) }}
 
@@ -125,7 +84,6 @@ jobs:
          redis-cli -h 127.0.0.1 -p 6379 ping
          redis-cli -h 127.0.0.1 -p 6379 cluster nodes
          redis-cli -h 127.0.0.1 -p 6379 cluster info
-
 
     - name: set up python
       uses: actions/setup-python@v4
