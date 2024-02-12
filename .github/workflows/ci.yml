@@ -119,6 +119,7 @@ jobs:
     runs-on: ${{ format('{0}-latest', matrix.os) }}
     
     steps:
+    - uses: actions/checkout@v2
     - name: Setup cluster
       run:  docker compose up
     - name: Redis Cluster Health Check
