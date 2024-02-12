@@ -164,8 +164,12 @@ async def test_mung(arq_redis_cluster: ArqRedisCluster, cluster_worker):
             arq_redis_cluster.enqueue_job('count', i, _job_id=f'v-{i}'),
             arq_redis_cluster.enqueue_job('count', i, _job_id=f'v-{i}'),
         ]
+    shuffle(tasks)
     
     await asyncio.gather(*tasks)
+  
+    
+    
     worker: Worker = cluster_worker(functions=[func(count, name='count')])
     await worker.main()
     assert counter.most_common(1)[0][1] == 1  # no job go enqueued twice
