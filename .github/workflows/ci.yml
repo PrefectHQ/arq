@@ -117,11 +117,11 @@ jobs:
       CLUSTER_MODE: ${{ true }}
 
     runs-on: ${{ format('{0}-latest', matrix.os) }}
-    
+
     steps:
     - uses: actions/checkout@v2
     - name: Setup cluster
-      run:  docker compose up
+      run:  docker-compose -f "docker-compose.yml" up -d --build
     - name: Redis Cluster Health Check
       run: |
          sudo apt-get install -y redis-tools
