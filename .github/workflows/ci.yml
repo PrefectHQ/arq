@@ -117,13 +117,10 @@ jobs:
       CLUSTER_MODE: ${{ true }}
 
     runs-on: ${{ format('{0}-latest', matrix.os) }}
-    services:
-      redis-cluster:
-        image: Dockerfile.cluster
-        ports:
-        - 6379:6379
     
     steps:
+    - name: Setup cluster
+      run:  docker compose up
     - name: Redis Cluster Health Check
       run: |
          sudo apt-get install -y redis-tools

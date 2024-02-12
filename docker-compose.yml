@@ -1,0 +1,19 @@
+---
+version: "3.8"
+services:
+  cluster:
+    container_name: redis-cluster
+    build:
+      context: dev/docker
+      dockerfile: Dockerfile.cluster
+    ports:
+      - 6379:6379
+      - 6380:6380
+      - 6381:6381
+      - 6382:6382
+      - 6383:6383
+      - 6384:6384
+    volumes:
+      - "./dev/docker/redis.conf:/redis.conf:ro"
+volumes:
+  cluster: {}
