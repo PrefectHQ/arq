@@ -165,11 +165,9 @@ async def test_mung(arq_redis_cluster: ArqRedisCluster, cluster_worker):
             arq_redis_cluster.enqueue_job('count', i, _job_id=f'v-{i}'),
         ]
     shuffle(tasks)
-    try: 
-        results = await asyncio.gather(*tasks)
-        print(results)
-    except Exception as e:
-        print(e)
+    
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+  
     
     
     worker: Worker = cluster_worker(functions=[func(count, name='count')])
