@@ -15,7 +15,7 @@ from redis.exceptions import ResponseError, WatchError
 from arq.cron import CronJob
 from arq.jobs import Deserializer, JobResult, SerializationError, Serializer, deserialize_job_raw, serialize_result
 
-from .connections import ArqRedis, ArqRedisCluster, RedisSettings, create_pool, log_redis_info
+from .connections import ArqRedis,ArqRedisCluster, RedisSettings, create_pool, log_redis_info
 from .constants import (
     abort_job_max_age,
     abort_jobs_ss,
@@ -347,7 +347,7 @@ class Worker:
                 default_queue_name=self.queue_name,
                 expires_extra_ms=self.expires_extra_ms,
             )
-
+        
         logger.info('Starting worker for %d functions: %s', len(self.functions), ', '.join(self.functions))
         if not isinstance(self._pool, ArqRedisCluster):
             await log_redis_info(self.pool, logger.info)
@@ -381,8 +381,8 @@ class Worker:
         if self.allow_pick_jobs:
             if self.job_counter < self.max_jobs:
                 now = timestamp_ms()
-                job_ids = await self.pool.zrange(
-                    self.queue_name, start=float('-inf'), offset=self._queue_read_offset, num=count, end=now,byscore=True
+                job_ids = await self.pool.zrangebyscore(
+                    self.queue_name, min=float('-inf'), start=self._queue_read_offset, num=count, max=now
                 )
 
                 await self.start_jobs(job_ids)
@@ -861,7 +861,7 @@ class Worker:
         await self.pool.delete(self.health_check_key)
         if self.on_shutdown:
             await self.on_shutdown(self.ctx)
-
+        
         if not isinstance(self._pool, ArqRedisCluster):
             await self.pool.close(close_connection_pool=True)
         else:

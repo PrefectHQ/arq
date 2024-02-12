@@ -1,0 +1,6 @@
+FROM redis:7.2-alpine as rss
+
+COPY ./create_cluster.sh /create_cluster.sh
+RUN chmod a+x /create_cluster.sh
+
+ENTRYPOINT ["/bin/sh","/create_cluster.sh"]
