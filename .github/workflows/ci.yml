@@ -117,7 +117,7 @@ jobs:
       CLUSTER_MODE: ${{ true }}
 
     runs-on: ${{ format('{0}-latest', matrix.os) }}
-    service:
+    services:
       redis-cluster:
         image: Dockerfile.cluster
         ports:
