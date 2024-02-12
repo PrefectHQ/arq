@@ -120,14 +120,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Setup cluster
       run:  docker-compose -f "docker-compose.yml" up -d --build
+
     - name: Redis Cluster Health Check
       run: |
          sudo apt-get install -y redis-tools
+         sleep 30
          redis-cli -h 127.0.0.1 -p 6379 ping
          redis-cli -h 127.0.0.1 -p 6379 cluster nodes
          redis-cli -h 127.0.0.1 -p 6379 cluster info
+
 
     - name: set up python
       uses: actions/setup-python@v4
@@ -144,6 +148,10 @@ jobs:
       with:
         file: ./coverage.xml
         env_vars: PYTHON,OS
+
+    - name: Stop containers
+      if: always()
+      run: docker-compose -f "docker-compose.yml" down
 
   deploy:
     name: Deploy
