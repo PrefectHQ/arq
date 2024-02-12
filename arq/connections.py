@@ -176,7 +176,6 @@ class ArqRedis(BaseRedis):
                 return None
 
         the_job = Job(job_id, redis=self, _queue_name=_queue_name, _deserializer=self.job_deserializer)
-        logger.info(the_job)
         return the_job
 
     async def _get_job_result(self, key: bytes) -> JobResult:
