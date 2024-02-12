@@ -16,4 +16,4 @@ services:
     volumes:
       - "./dev/docker/redis.conf:/redis.conf:ro"
 volumes:
-  cluster:
+  cluster: {}
