@@ -383,7 +383,7 @@ class Worker:
                 now = timestamp_ms()
                 logger.info(self.pool.zrange(self.queue_name,0,-1
                 ))
-                logger.info(f"Queue key in node ${self.get_node_from_key(self.queue_name)}")
+                logger.info(f"Queue key in node ${self.pool.get_node_from_key(self.queue_name)}")
                 job_ids = await self.pool.zrangebyscore(
                     self.queue_name, min=float('-inf'), start=self._queue_read_offset, num=count, max=now
                 )
