@@ -452,7 +452,7 @@ class Worker:
                 score = await pipe.zscore(self.queue_name, job_id)
                 if ongoing_exists or not score:
                     logger.info(f"key in progress {ongoing_exists}")
-                    logger.info(f"Score ${score} does not exist.")
+                    logger.info(f"Score ${score}")
                     logger.info(await self.pool.zrange(self.queue_name,0,-1
                 ))
                     # job already started elsewhere, or already finished and removed from queue
@@ -702,6 +702,7 @@ class Worker:
                     tr.set(result_key_prefix + job_id, result_data, px=to_ms(expire))  # type: ignore[unused-coroutine]
                 delete_keys += [retry_key_prefix + job_id, job_key_prefix + job_id]
                 tr.zrem(abort_jobs_ss, job_id)  # type: ignore[unused-coroutine]
+                logger.info(f"job {job_id} finished and is being removed from queue")
                 tr.zrem(self.queue_name, job_id)  # type: ignore[unused-coroutine]
             elif incr_score:
                 tr.zincrby(self.queue_name, incr_score, job_id)  # type: ignore[unused-coroutine]
