@@ -1,18 +1,21 @@
 import asyncio
 import functools
 import logging
+import inspect
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from operator import attrgetter
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, List,Mapping, Optional, Tuple, TypeVar, Union
 from urllib.parse import parse_qs, urlparse
 from uuid import uuid4
-
+from redis.client import (
+    EMPTY_RESPONSE,
+)
 from redis.asyncio import ConnectionPool, Redis
 from redis.asyncio.connection import Connection
 from redis.asyncio.cluster import ClusterPipeline, PipelineCommand, RedisCluster  # type: ignore
 from redis.asyncio.sentinel import Sentinel
-from redis.exceptions import RedisError, WatchError,RedisClusterException
+from redis.exceptions import RedisError, WatchError,RedisClusterException,ExecAbortError,ResponseError,TimeoutError
 from redis.typing import EncodableT, KeyT
 
 from .constants import default_queue_name, expires_extra_ms, job_key_prefix, result_key_prefix
@@ -24,6 +27,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 _KeyT = TypeVar('_KeyT', bound=KeyT)
+CommandT = Tuple[Tuple[Union[str, bytes], ...], Mapping[str, Any]]
+CommandStackT = List[CommandT]
 
 
 @dataclass
@@ -317,16 +322,6 @@ class ArqRedisClusterPipeline(ClusterPipeline):  # type: ignore
         if not (conn.retry_on_timeout and isinstance(error, TimeoutError)):
             await self.aclose()
             raise
-
-    async def parse_response(
-        self, connection: Connection, command_name: Union[str, bytes], **options
-    ):
-        result = await super().parse_response(connection, command_name, **options)
-        if command_name in self.UNWATCH_COMMANDS:
-            self.watching = False
-        elif command_name == "WATCH":
-            self.watching = True
-        return result
 
 
     async def reset(self):

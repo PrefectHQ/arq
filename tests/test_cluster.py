@@ -161,8 +161,8 @@ async def test_mung(arq_redis_cluster: ArqRedisCluster, cluster_worker):
     tasks = []
     for i in range(50):
         tasks += [
-            arq_redis_cluster.enqueue_job('count', i, _job_id=f'v-{{i}}'),
-            arq_redis_cluster.enqueue_job('count', i, _job_id=f'v-{{i}}'),
+            arq_redis_cluster.enqueue_job('count', i, _job_id=f'v-{ {i} }'),
+            arq_redis_cluster.enqueue_job('count', i, _job_id=f'v-{ {i} }'),
         ]
     shuffle(tasks)
     
