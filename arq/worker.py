@@ -450,11 +450,11 @@ class Worker:
                 await pipe.watch(in_progress_key)
                 ongoing_exists = await pipe.exists(in_progress_key)
                 score = await pipe.zscore(self.queue_name, job_id)
-                if ongoing_exists: logger.info("key in progress {in_progress_key}")
-                if not score: logger.info("Score {score} does not exist.")
                 if ongoing_exists or not score:
-                    logger.info(f"key in progress ${in_progress_key}")
+                    logger.info(f"key in progress {ongoing_exists}")
                     logger.info(f"Score ${score} does not exist.")
+                    logger.info(await self.pool.zrange(self.queue_name,0,-1
+                ))
                     # job already started elsewhere, or already finished and removed from queue
                     self.job_counter = self.job_counter - 1
                     self.sem.release()
