@@ -157,6 +157,7 @@ class ArqRedis(BaseRedis):
 
         async with self.pipeline(transaction=True) as pipe:
             await pipe.watch(job_key)
+            logger.info(f"Watching key in node ${self.get_node_from_key(job_key)}")
             if await pipe.exists(job_key, result_key_prefix + job_id):
                 await pipe.reset()
                 return None

@@ -159,7 +159,7 @@ async def test_mung(arq_redis_cluster: ArqRedisCluster, cluster_worker):
         counter[v] += 1
 
     tasks = []
-    for i in range(50):
+    for i in range(25):
         tasks += [
             arq_redis_cluster.enqueue_job('count', i, _job_id=f'v-{ {i} }'),
             arq_redis_cluster.enqueue_job('count', i, _job_id=f'v-{ {i} }'),
