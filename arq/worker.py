@@ -453,6 +453,8 @@ class Worker:
                 if ongoing_exists: logger.info("key in progress {in_progress_key}")
                 if not score: logger.info("Score {score} does not exist.")
                 if ongoing_exists or not score:
+                    logger.info("key in progress {in_progress_key}")
+                    logger.info("Score {score} does not exist.")
                     # job already started elsewhere, or already finished and removed from queue
                     self.job_counter = self.job_counter - 1
                     self.sem.release()
