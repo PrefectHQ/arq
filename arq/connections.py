@@ -9,9 +9,10 @@ from urllib.parse import parse_qs, urlparse
 from uuid import uuid4
 
 from redis.asyncio import ConnectionPool, Redis
+from redis.asyncio.connection import Connection
 from redis.asyncio.cluster import ClusterPipeline, PipelineCommand, RedisCluster  # type: ignore
 from redis.asyncio.sentinel import Sentinel
-from redis.exceptions import RedisError, WatchError
+from redis.exceptions import RedisError, WatchError,RedisClusterException
 from redis.typing import EncodableT, KeyT
 
 from .constants import default_queue_name, expires_extra_ms, job_key_prefix, result_key_prefix
@@ -258,13 +259,20 @@ class ArqRedisCluster(BaseRedisCluster):  # type: ignore
 
 
 class ArqRedisClusterPipeline(ClusterPipeline):  # type: ignore
+    UNWATCH_COMMANDS = {"DISCARD", "EXEC", "UNWATCH"}
+
     def __init__(self, client: RedisCluster) -> None:
         self.watching = False
         super().__init__(client)
 
     async def watch(self, *names: KeyT):
         self.watching = True
-        return await self.execute_command("WATCH", *names)
+        if len(names) != 1:
+            raise RedisClusterException(
+                "Watching multiple keys is not implemented in pipeline command"
+            )
+
+        return await self.execute_command("WATCH", names[0])
 
     def multi(self) -> None:
         self.watching = False
@@ -287,7 +295,54 @@ class ArqRedisClusterPipeline(ClusterPipeline):  # type: ignore
             if self.watching:
                 return self.execute_command(command, *slot_keys)
         return self
+    
+    async def _disconnect_reset_raise(self, conn, error):
+        """
+        Close the connection, reset watching state and
+        raise an exception if we were watching,
+        retry_on_timeout is not set,
+        or the error is not a TimeoutError
+        """
+        await conn.disconnect()
+        # if we were already watching a variable, the watch is no longer
+        # valid since this connection has died. raise a WatchError, which
+        # indicates the user should retry this transaction.
+        if self.watching:
+            await self.aclose()
+            raise WatchError(
+                "A ConnectionError occurred on while watching one or more keys"
+            )
+        # if retry_on_timeout is not set, or the error is not
+        # a TimeoutError, raise it
+        if not (conn.retry_on_timeout and isinstance(error, TimeoutError)):
+            await self.aclose()
+            raise
 
+    async def parse_response(
+        self, connection: Connection, command_name: Union[str, bytes], **options
+    ):
+        result = await super().parse_response(connection, command_name, **options)
+        if command_name in self.UNWATCH_COMMANDS:
+            self.watching = False
+        elif command_name == "WATCH":
+            self.watching = True
+        return result
+
+
+    async def reset(self):
+        self.command_stack = []
+        if self.watching:
+            try:
+                # call this manually since our unwatch or
+                # immediate_execute_command methods can call reset()
+                await self.execute_command("UNWATCH")
+            except ConnectionError:
+                # disconnect will also remove any previous WATCHes
+                if self.connection:
+                    await self.connection.disconnect()
+        # clean up the other instance attributes
+        self.watching = False
+ 
 
 async def create_pool(
     settings_: RedisSettings = None,
