@@ -172,7 +172,7 @@ async def test_mung(arq_redis_cluster: ArqRedisCluster, cluster_worker):
     
     worker: Worker = cluster_worker(functions=[func(count, name='count')])
     await worker.main()
-    assert counter.most_common(1)[0][1] == 0  # no job go enqueued twice
+    assert counter.most_common(1)[0][1] == 1  # no job go enqueued twice
 
 
 # async def test_custom_try(arq_redis_cluster: ArqRedisCluster, cluster_worker):
